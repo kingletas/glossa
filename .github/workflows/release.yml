@@ -25,9 +25,14 @@ jobs:
 
       - name: Work out which version this is
         id: pick
+        # The typed version reaches the shell as a variable, never pasted into
+        # the script, so it can't run as code.
+        env:
+          EVENT: ${{ github.event_name }}
+          TYPED: ${{ inputs.version }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            version="${{ inputs.version }}"
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            version="$TYPED"
           else
             version="${GITHUB_REF_NAME#v}"
           fi
@@ -47,8 +52,9 @@ jobs:
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.pick.outputs.version }}
         run: |
-          version="${{ steps.pick.outputs.version }}"
+          version="$VERSION"
           packaging/release-notes.sh "$version" > notes.md
           if gh release view "v${version}" >/dev/null 2>&1; then
             echo "v${version} exists: updating its notes"

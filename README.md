@@ -6,7 +6,7 @@
 
 Obsidian notes are Markdown with a dialect on top: wikilinks and embeds, callouts, frontmatter, Dataview queries, `.base` views, canvases, Kanban boards, Excalidraw drawings and Mermaid diagrams. This library reads each of those in pure Python, without running anything a note contains. Queries, bases, canvases, boards and drawings come out as escaped HTML. Markdown comes out as tokens, with every link and embed already taken apart, so each app draws them its own way.
 
-It is the rendering core two reading apps share: [Solander](https://github.com/kingletas/solander), a read-only vault reader, and Slate. Both used to carry their own copy of these modules, kept identical by a check that ran only when both checkouts were on one machine. Every fix was made twice. Now it is made here once, and each app pins a version.
+It's the rendering core two reading apps share: [Solander](https://github.com/kingletas/solander), a read-only vault reader, and Slate. Both used to carry their own copy of these modules, kept identical by a check that ran only when both checkouts were on one machine. Every fix was made twice. Now it's made here once, and each app pins a version.
 
 ## What it promises
 
@@ -29,7 +29,7 @@ It is the rendering core two reading apps share: [Solander](https://github.com/k
 
 ## Using it
 
-It is not on PyPI. An app depends on a tagged version straight from this repository:
+It isn't on PyPI. An app depends on a tagged version straight from this repository:
 
 ```toml
 dependencies = [
@@ -61,7 +61,7 @@ Versions follow semantic versioning from `0.1.0`. While the major version is 0, 
 make check
 ```
 
-Runs ruff and the tests. The tests here cover what needs no vault. Each app keeps the tests that need its own vault graph, so a change here is proved in both apps before it is tagged.
+Runs ruff and the tests. The tests here cover what needs no vault. Each app keeps the tests that need its own vault graph, so a change here is proved in both apps before it's tagged.
 
 ## Licence
 
