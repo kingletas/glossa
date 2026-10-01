@@ -25,7 +25,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install uv
-        run: pip install uv
+        run: pip install -c .github/ci-requirements.txt uv
       - name: Install dependencies
         run: uv sync --frozen
       # The same gate a commit passes here: ruff, then the tests.
@@ -41,5 +41,5 @@ jobs:
           python-version: "3.12"
       - name: Semgrep
         run: |
-          pip install semgrep
+          pip install -c .github/ci-requirements.txt semgrep
           semgrep --config p/python --error --metrics=off src/ tests/

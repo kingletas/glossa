@@ -50,7 +50,7 @@ jobs:
       - name: Install the tagged commit and run its tests
         run: |
           python3 -m venv .release-venv
-          .release-venv/bin/pip install --quiet ".[render]" pytest
+          .release-venv/bin/pip install --quiet -c .github/ci-requirements.txt ".[render]" pytest
           .release-venv/bin/python -m pytest -q
 
       - name: Publish

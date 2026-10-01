@@ -26,3 +26,11 @@ updates:
       all:
         patterns: ["*"]
     open-pull-requests-limit: 2
+
+  # The tools CI installs, pinned in .github/ci-requirements.txt.
+  - package-ecosystem: pip
+    directory: /.github
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
