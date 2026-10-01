@@ -8,10 +8,10 @@ glossa reads Obsidian's dialect of Markdown without running anything a note cont
 
 ## Step 1: install it
 
-Into the project that will use it:
+Into the project that will use it, with the `render` extra, because this guide parses Markdown and reads YAML:
 
 ```bash
-uv add "glossa @ git+https://github.com/kingletas/glossa@v0.1.0"
+uv add "glossa[render] @ git+https://github.com/kingletas/glossa@v0.1.0"
 ```
 
 ## Step 2: read a note
@@ -50,7 +50,7 @@ The properties came out typed, the link came out as its parts rather than as HTM
 
 - **Obsidian's link grammar**: targets, headings, block ids, aliases and embed sizes, already split.
 - **A Dataview interpreter** that answers the query language and inline expressions in Python, with no JavaScript anywhere.
-- **Limits on everything large**: a base, a canvas, a drawing or a diagram past its limit is refused or cut, and the output says which.
+- **Limits on everything large**: a base, a canvas, a drawing or a diagram past its limit is refused or cut. The README lists each limit and what happens past it.
 
 ## Where to go next
 

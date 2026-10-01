@@ -14,7 +14,9 @@ wheels = [
 [[package]]
 name = "glossa"
 source = { editable = "." }
-dependencies = [
+
+[package.optional-dependencies]
+render = [
     { name = "linkify-it-py" },
     { name = "markdown-it-py" },
     { name = "mdit-py-plugins" },
@@ -23,20 +25,23 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "glossa", extra = ["render"] },
     { name = "pytest" },
     { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "linkify-it-py", specifier = ">=2.0" },
-    { name = "markdown-it-py", specifier = ">=3.0" },
-    { name = "mdit-py-plugins", specifier = ">=0.4" },
-    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "linkify-it-py", marker = "extra == 'render'", specifier = ">=2.0" },
+    { name = "markdown-it-py", marker = "extra == 'render'", specifier = ">=3.0" },
+    { name = "mdit-py-plugins", marker = "extra == 'render'", specifier = ">=0.4" },
+    { name = "pyyaml", marker = "extra == 'render'", specifier = ">=6.0" },
 ]
+provides-extras = ["render"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "glossa", extras = ["render"] },
     { name = "pytest", specifier = ">=8.0" },
     { name = "ruff", specifier = ">=0.6" },
 ]

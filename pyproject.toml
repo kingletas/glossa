@@ -6,7 +6,13 @@ readme = "README.md"
 license = { file = "LICENSE" }
 authors = [{ name = "Luis Tineo", email = "code@kingletas.com" }]
 requires-python = ">=3.12"
-dependencies = [
+# A bare install is the standard library alone, enough for the palettes, list
+# diffs, fuzzy matching, Dataview and the drawings. Parsing Markdown and reading
+# YAML (`markdown`, `frontmatter`, `bases`) take the `render` extra.
+dependencies = []
+
+[project.optional-dependencies]
+render = [
     "markdown-it-py>=3.0",
     "mdit-py-plugins>=0.4",
     "linkify-it-py>=2.0",
@@ -17,6 +23,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "ruff>=0.6",
+    "glossa[render]",
 ]
 
 [tool.hatch.version]

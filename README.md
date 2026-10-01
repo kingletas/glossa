@@ -13,7 +13,7 @@ It is the rendering core two reading apps share: [Solander](https://github.com/k
 - **It never writes.** No module opens a file for writing, and none keeps a cache on disk.
 - **It never runs a note's code.** A Dataview query is evaluated by a small interpreter written here, and nothing in the library calls `eval`, `exec` or a subprocess. What an app shows for a `dataviewjs` block is the app's choice.
 - **It never touches the network.** Every link it renders points into the vault or is left for the app to decide.
-- **Everything it renders as HTML is escaped**, and every limit is a number you can read: `READER_MAX_BASE_BYTES`, `READER_MAX_CANVAS_NODES` and the rest, set by environment variable.
+- **Everything it renders as HTML is escaped**, and every limit is a number you can read: listed under [Limits](#limits) and set by environment variable.
 
 ## What is in it
 
@@ -33,9 +33,25 @@ It is not on PyPI. An app depends on a tagged version straight from this reposit
 
 ```toml
 dependencies = [
-    "glossa @ git+https://github.com/kingletas/glossa@v0.1.0",
+    "glossa[render] @ git+https://github.com/kingletas/glossa@v0.1.0",
 ]
 ```
+
+A bare `glossa` is the standard library alone, and covers every module but three. `markdown`, `frontmatter` and `bases` parse Markdown or read YAML, so they need the `render` extra, which brings markdown-it-py, its plugins, linkify-it-py and PyYAML. An app that only themes with the palettes or diffs lists can leave the extra off.
+
+## Limits
+
+Each limit is read from the environment once, when its module is first imported, so set it before then. Past a limit, some input is refused with a message and some is cut without one, as the last column says.
+
+| Variable | Default | Caps | Past it |
+|---|---|---|---|
+| `READER_MAX_FRONTMATTER_BYTES` | 128 KiB | A note's properties block | The note has no properties |
+| `READER_MAX_BASE_BYTES` | 1 MiB | A `.base` file | Refused, with a message |
+| `READER_MAX_CANVAS_BYTES` | 5 MiB | A canvas file | Refused, with a message |
+| `READER_MAX_CANVAS_NODES` | 1,000 | The cards on one canvas | The first 1,000 are drawn, silently |
+| `READER_MAX_DRAWING_BYTES` | 10 MiB | An Excalidraw drawing | Refused, with a message |
+| `READER_MAX_DRAWING_ELEMENTS` | 3,000 | The shapes in one drawing | The first 3,000 are drawn, silently |
+| `READER_MAX_DIAGRAM_NODES` | 400 | The nodes in one Mermaid diagram | `MermaidError`, for the app to show |
 
 Versions follow semantic versioning from `0.1.0`. While the major version is 0, a minor release may change what a module renders, and the CHANGELOG says how.
 
