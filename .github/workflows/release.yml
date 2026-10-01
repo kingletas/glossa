@@ -2,7 +2,8 @@ name: Release
 
 # Tagging is the whole trigger: `git tag v1.2.3 && git push --tags` checks the
 # changelog has a section for it, then publishes a GitHub Release whose body is
-# that section.
+# that section. Run by hand, it tests and releases the branch it is run from,
+# not the tag the typed version names, so run it from that tag.
 on:
   push:
     tags: ["v*"]
@@ -21,7 +22,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Work out which version this is
         id: pick
@@ -36,6 +37,9 @@ jobs:
           else
             version="${GITHUB_REF_NAME#v}"
           fi
+          # Anything but a plain version, a newline above all, could write a
+          # second line into the step's outputs.
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "not a version: $version"; exit 1; }
           # A release with no notes is one nobody can read, so this stops here
           # rather than publishing an empty body.
           packaging/release-notes.sh "$version" > /dev/null
