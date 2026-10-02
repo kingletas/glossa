@@ -13,16 +13,16 @@ dependencies = []
 
 [project.optional-dependencies]
 render = [
-    "markdown-it-py>=3.0",
-    "mdit-py-plugins>=0.4",
-    "linkify-it-py>=2.0",
-    "pyyaml>=6.0",
+    "markdown-it-py>=4.2.0",
+    "mdit-py-plugins>=0.6.1",
+    "linkify-it-py>=2.2.0",
+    "pyyaml>=6.0.3",
 ]
 
 [dependency-groups]
 dev = [
-    "pytest>=8.0",
-    "ruff>=0.6",
+    "pytest>=9.1.1",
+    "ruff>=0.16.9",
     "glossa[render]",
 ]
 
