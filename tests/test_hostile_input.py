@@ -3,7 +3,7 @@ whatever it trips inside a renderer reaches the caller as that renderer's one er
 
 import pytest
 
-from glossa import excalidraw, mermaid
+from glossa import dataview, excalidraw, mermaid
 from glossa.bases import _sort_key, render_base
 from glossa.dataview import DataviewEngine, Evaluator, Row
 from glossa.dql import DqlError, parse_expression
@@ -108,6 +108,20 @@ def test_a_value_that_grows_past_the_ceiling_is_refused():
         expression = f'replace({expression}, "a", "aaaaaaaaaa")'
     with pytest.raises(DqlError, match="grew past"):
         Evaluator(Row({}, {})).evaluate(parse_expression(expression), Row({}, {}))
+
+
+@pytest.mark.parametrize(
+    "expression",
+    ['replace(this.big, "", this.big)', "join([" + ", ".join(["this.big"] * 20) + "])"],
+)
+def test_one_step_past_the_ceiling_is_refused_before_it_is_built(expression, monkeypatch):
+    # With the check on a finished value switched off, only the measure taken before
+    # building can refuse: one call whose inputs each fit must not get to build.
+    monkeypatch.setattr(dataview, "_bounded", lambda value: value)
+    monkeypatch.setattr(dataview, "MAX_VALUE_CHARS", 1_000)
+    big = Row({"big": "a" * 500}, {})
+    with pytest.raises(DqlError, match="grew past"):
+        Evaluator(big).evaluate(parse_expression(expression), big)
 
 
 class Graph:

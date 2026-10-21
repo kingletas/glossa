@@ -38,7 +38,7 @@ MAX_RESULT_ROWS = 2000
 # at every level.
 MAX_VALUE_CHARS = int(os.environ.get("READER_MAX_VALUE_CHARS", str(1_000_000)))
 # What a note's expression can trip inside the evaluator; each reaches the caller as a DqlError.
-TRIPPED = (ArithmeticError, LookupError, RecursionError, TypeError, ValueError)
+TRIPPED = (ArithmeticError, LookupError, MemoryError, RecursionError, TypeError, ValueError)
 
 # `date(today)` writes the keyword bare, so the parser hands it back as a field
 # name. Evaluating it as one finds no such property and the whole comparison
@@ -227,9 +227,15 @@ class Evaluator:
 
 def _bounded(value):
     """VALUE, unless it is a string or list longer than MAX_VALUE_CHARS."""
-    if isinstance(value, (str, list)) and len(value) > MAX_VALUE_CHARS:
-        raise DqlError(f"a value grew past {MAX_VALUE_CHARS:,} characters")
+    if isinstance(value, (str, list)):
+        _fits(len(value))
     return value
+
+
+def _fits(size: int) -> None:
+    """Raises when a value of SIZE would pass MAX_VALUE_CHARS."""
+    if size > MAX_VALUE_CHARS:
+        raise DqlError(f"a value grew past {MAX_VALUE_CHARS:,} characters")
 
 
 def _date_keyword(node) -> str:
@@ -318,11 +324,17 @@ def _function(name: str, arguments: list):
         return str(arguments[0] or "").casefold().endswith(str(arguments[1]).casefold())
     if name == "join":
         separator = str(arguments[1]) if len(arguments) > 1 else ", "
-        return separator.join(_to_text(v) for v in (arguments[0] or []))
+        parts = [_to_text(v) for v in (arguments[0] or [])]
+        _fits(sum(map(len, parts)) + len(separator) * max(len(parts) - 1, 0))
+        return separator.join(parts)
     if name == "replace":
         if arguments[0] is None:
             return None
-        return str(arguments[0]).replace(str(arguments[1]), str(arguments[2]))
+        text, old, new = str(arguments[0]), str(arguments[1]), str(arguments[2])
+        # Measured before it is built: one replace of a long text can be gigabytes.
+        count = len(text) + 1 if old == "" else text.count(old)
+        _fits(len(text) + count * (len(new) - len(old)))
+        return text.replace(old, new)
     if name == "split":
         if arguments[0] is None:
             return None
