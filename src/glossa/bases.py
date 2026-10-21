@@ -12,18 +12,29 @@ from functools import lru_cache
 
 import yaml
 
-from .dataview import DataviewEngine, Evaluator, Row, _to_text, _value_html
+from .dataview import TRIPPED, DataviewEngine, Evaluator, Row, _to_text, _value_html
 from .dql import DqlError, parse_expression
+from .frontmatter import refuse_aliases
 
 MAX_BASE_BYTES = int(os.environ.get("READER_MAX_BASE_BYTES", str(1024 * 1024)))
 MAX_BASE_ROWS = 500
 
 
 def render_base(graph, text: str) -> str:
-    """Renders every view of a base file into escaped markup."""
+    """Renders every view of a base file into escaped markup, or a message saying why it cannot."""
+    try:
+        return _render_base(graph, text)
+    except DqlError as error:
+        return _message(f"This base file could not be rendered: {error}")
+    except TRIPPED as error:
+        return _message(f"This base file could not be rendered ({type(error).__name__})")
+
+
+def _render_base(graph, text: str) -> str:
     if len(text.encode("utf-8", errors="replace")) > MAX_BASE_BYTES:
         return _message("This base file is too large to render")
     try:
+        refuse_aliases(text)
         data = yaml.safe_load(text)
     except yaml.YAMLError as error:
         return _message(f"This base file is not valid YAML: {error}")
@@ -264,7 +275,10 @@ def _short(column: str) -> str:
 
 
 def _sort_key(value):
-    return (value is None, _to_text(value).casefold())
+    """Missing values last; numbers by their value, ahead of text; text without case."""
+    if isinstance(value, (int, float)) and not isinstance(value, bool):
+        return (False, 0, float(value), "")
+    return (value is None, 1, 0.0, _to_text(value).casefold())
 
 
 def _message(text: str) -> str:

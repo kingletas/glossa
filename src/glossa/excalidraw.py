@@ -10,7 +10,7 @@ import json
 import os
 import re
 
-from .lzstring import decompress_base64
+from .lzstring import TooLarge, decompress_base64
 
 MAX_DRAWING_BYTES = int(os.environ.get("READER_MAX_DRAWING_BYTES", str(10 * 1024 * 1024)))
 MAX_ELEMENTS = int(os.environ.get("READER_MAX_DRAWING_ELEMENTS", "3000"))
@@ -27,7 +27,10 @@ def excalidraw_body(text: str) -> str:
     payload = None
     match = _COMPRESSED.search(text)
     if match:
-        payload = decompress_base64(match.group(1))
+        try:
+            payload = decompress_base64(match.group(1), limit=MAX_DRAWING_BYTES)
+        except TooLarge:
+            return _message("This drawing is too large to render")
         if payload is None:
             return _message("The compressed drawing data could not be decoded")
     else:
@@ -40,7 +43,7 @@ def excalidraw_body(text: str) -> str:
         return _message("This drawing is too large to render")
     try:
         data = json.loads(payload)
-    except ValueError:
+    except (ValueError, RecursionError):
         return _message("The drawing data is not valid JSON")
     elements = data.get("elements") if isinstance(data, dict) else None
     if not isinstance(elements, list):

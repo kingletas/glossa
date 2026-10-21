@@ -1,10 +1,9 @@
 """Every theme's colours, and nothing per theme but colours.
 
-Stone is the house identity and the reference the rest are measured against. The
+Stone is the default theme and the reference the rest are measured against. The
 Archive family below it shares one design language: a dark ground, bone text, an
 accent for what is important and a hot colour held back for what matters. So a
-member of it is sixteen colours. The shared rules live in `assets/theme-archive.css`;
-the tokens those rules consume are generated from these palettes.
+member of it is sixteen colours, and an app generates its style tokens from them.
 """
 
 from dataclasses import dataclass
@@ -165,8 +164,8 @@ STONE_LIGHT = Palette(
 )
 """Stone by day: warm neutral greys with the sepia out, and one deep pine.
 
-`muted` measures 3.26:1 on the canvas, which is the identity's own value. It carries
-text only after `page_tokens()` puts it through `legible()`, which lifts it to 4.81:1.
+`muted` measures 3.26:1 on the canvas, below the 4.5:1 text needs, so an app puts it
+through `Palette.legible()` before using it for text, which lifts it to 4.81:1.
 """
 
 STONE_DARK = Palette(

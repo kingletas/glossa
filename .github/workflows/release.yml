@@ -17,12 +17,16 @@ permissions:
   contents: read
 
 jobs:
-  release:
+  # The tests install packages from PyPI and run their code, so they run with a
+  # read-only token that is not kept in the checkout.
+  test:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    outputs:
+      version: ${{ steps.pick.outputs.version }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Work out which version this is
         id: pick
@@ -53,10 +57,22 @@ jobs:
           .release-venv/bin/pip install --quiet -c .github/ci-requirements.txt ".[render]" pytest
           .release-venv/bin/python -m pytest -q
 
+  # Only this job can write, and it installs nothing: it reads the changelog and
+  # calls gh.
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.pick.outputs.version }}
+          VERSION: ${{ needs.test.outputs.version }}
         run: |
           version="$VERSION"
           packaging/release-notes.sh "$version" > notes.md

@@ -33,7 +33,7 @@ _FrontmatterLoader.yaml_implicit_resolvers = {
 }
 
 
-def _refuse_aliases(raw: str) -> None:
+def refuse_aliases(raw: str) -> None:
     """Raises before any alias is expanded, over the parser's own event stream.
 
     This is a pass rather than a `compose_node` override because LibYAML composes
@@ -42,7 +42,7 @@ def _refuse_aliases(raw: str) -> None:
     """
     for event in yaml.parse(raw, Loader=_SafeLoader):
         if isinstance(event, yaml.AliasEvent):
-            raise yaml.YAMLError("aliases are not allowed in frontmatter")
+            raise yaml.YAMLError("YAML aliases are not read: a few lines can expand to gigabytes")
 
 
 @dataclass(frozen=True)
@@ -77,7 +77,7 @@ def _parse_properties(raw: str) -> dict:
     if len(raw.encode("utf-8", errors="replace")) > MAX_FRONTMATTER_BYTES:
         return {}
     try:
-        _refuse_aliases(raw)
+        refuse_aliases(raw)
         parsed = yaml.load(raw, Loader=_FrontmatterLoader)  # noqa: S506 - SafeLoader subclass
     except yaml.YAMLError:
         return {}
