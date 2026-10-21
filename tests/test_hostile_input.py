@@ -112,6 +112,27 @@ def test_a_value_that_grows_past_the_ceiling_is_refused():
 
 @pytest.mark.parametrize(
     "expression",
+    [
+        "string([" + ", ".join(["[" + ", ".join(["this.big"] * 20) + "]"] * 20) + "])",
+        "join([" + ", ".join(["[" + ", ".join(["this.big"] * 20) + "]"] * 20) + '], "")',
+        '"" + [' + ", ".join(["this.big"] * 20) + "]",
+    ],
+)
+def test_a_list_of_references_is_refused_as_its_text_is_made(expression, monkeypatch):
+    # Each part is measured as it is made, so no more than about one ceiling is ever built.
+    monkeypatch.setattr(dataview, "_bounded", lambda value: value)
+    monkeypatch.setattr(dataview, "MAX_VALUE_CHARS", 1_000)
+    made = []
+    real = dataview._to_text
+    monkeypatch.setattr(dataview, "_to_text", lambda value: made.append(len(r := real(value))) or r)
+    big = Row({"big": "a" * 300}, {})
+    with pytest.raises(DqlError, match="grew past"):
+        Evaluator(big).evaluate(parse_expression(expression), big)
+    assert sum(made) < 3_000
+
+
+@pytest.mark.parametrize(
+    "expression",
     ['replace(this.big, "", this.big)', "join([" + ", ".join(["this.big"] * 20) + "])"],
 )
 def test_one_step_past_the_ceiling_is_refused_before_it_is_built(expression, monkeypatch):

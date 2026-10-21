@@ -324,9 +324,7 @@ def _function(name: str, arguments: list):
         return str(arguments[0] or "").casefold().endswith(str(arguments[1]).casefold())
     if name == "join":
         separator = str(arguments[1]) if len(arguments) > 1 else ", "
-        parts = [_to_text(v) for v in (arguments[0] or [])]
-        _fits(sum(map(len, parts)) + len(separator) * max(len(parts) - 1, 0))
-        return separator.join(parts)
+        return _joined(arguments[0] or [], separator)
     if name == "replace":
         if arguments[0] is None:
             return None
@@ -559,8 +557,20 @@ def _to_text(value) -> str:
     if isinstance(value, datetime.timedelta):
         return _duration_text(value)
     if isinstance(value, list):
-        return ", ".join(_to_text(item) for item in value)
+        return _joined(value, ", ")
     return str(value)
+
+
+def _joined(items, separator: str) -> str:
+    """ITEMS as text with SEPARATOR between them, measured part by part as each is made, so
+    a list of many references to one long value is refused before it is built."""
+    parts, size = [], 0
+    for item in items:
+        text = _to_text(item)
+        size += len(text) + (len(separator) if parts else 0)
+        _fits(size)
+        parts.append(text)
+    return separator.join(parts)
 
 
 def _duration_text(delta: datetime.timedelta) -> str:
