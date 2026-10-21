@@ -1,25 +1,33 @@
 """Decompresses LZ-String base64 payloads, the encoding Excalidraw notes use.
 
 A pure-Python port of lz-string's decompressFromBase64, decode side only; this
-reader never writes the format. Malformed input returns None, never raises.
+reader never writes the format. Malformed input returns None. Output past the
+caller's limit raises TooLarge as soon as it passes it, since a few kilobytes
+of crafted input can decompress to gigabytes.
 """
+
+
+class TooLarge(Exception):
+    """The decompressed text would pass the caller's limit."""
 
 _KEY = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 _REVERSE = {character: index for index, character in enumerate(_KEY)}
 
 
-def decompress_base64(data: str) -> str | None:
-    """Returns the decompressed text, or None when the payload is not valid."""
+def decompress_base64(data: str, limit: int | None = None) -> str | None:
+    """Returns the decompressed text, or None when the payload is not valid.
+
+    Raises TooLarge once the text passes LIMIT characters, before it is finished."""
     if not data:
         return ""
     cleaned = "".join(data.split())
     try:
-        return _decompress(len(cleaned), 32, lambda i: _REVERSE[cleaned[i]])
+        return _decompress(len(cleaned), 32, lambda i: _REVERSE[cleaned[i]], limit)
     except (KeyError, IndexError, OverflowError, ValueError):
         return None
 
 
-def _decompress(length: int, reset_value: int, get_next) -> str | None:
+def _decompress(length: int, reset_value: int, get_next, limit: int | None = None) -> str | None:
     dictionary: list[str] = ["", "", ""]
     enlarge_in = 4
     num_bits = 3
@@ -50,6 +58,7 @@ def _decompress(length: int, reset_value: int, get_next) -> str | None:
     dictionary.append(character)
     previous = character
     result.append(character)
+    size = 1
 
     while True:
         if state["index"] > length:
@@ -80,6 +89,9 @@ def _decompress(length: int, reset_value: int, get_next) -> str | None:
             entry = previous + previous[0]
         else:
             return None
+        size += len(entry)
+        if limit is not None and size > limit:
+            raise TooLarge
         result.append(entry)
         dictionary.append(previous + entry[0])
         enlarge_in -= 1

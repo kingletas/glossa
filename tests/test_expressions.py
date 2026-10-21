@@ -112,17 +112,17 @@ def test_a_bases_duration_string_beside_a_date():
     assert evaluate('"a" + "1d"') == "a1d"
 
 
-def test_functions_used_by_the_vault():
+def test_common_functions():
     assert evaluate('length([1, 2, 3])') == 3
     assert evaluate('lower("ABC")') == "abc"
-    assert evaluate('contains("Hunt/Applied", "applied")') is True
-    assert evaluate('startswith("01 Journal/Notes/2026", "01 Journal")') is True
+    assert evaluate('contains("Archive/Done", "done")') is True
+    assert evaluate('startswith("Log/Notes/2030", "Log")') is True
     assert evaluate("sum([1, 2, 3])") == 6
     assert evaluate('striptime(date("2026-09-01T10:30"))') == datetime.date(2026, 9, 1)
 
 
 def test_unknown_function_is_a_named_refusal():
     with pytest.raises(DqlError):
-        evaluate("regexmatch('a', 'b')")
+        evaluate('regexmatch("a", "b")')
 
 

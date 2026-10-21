@@ -7,6 +7,7 @@ through `html.escape`. The markup here is the app's own, like a message page.
 
 import html
 import json
+import math
 import os
 from dataclasses import dataclass, field
 
@@ -64,7 +65,7 @@ def parse_canvas(raw: str) -> Canvas:
         return Canvas(error="This canvas is too large to render")
     try:
         data = json.loads(raw)
-    except ValueError:
+    except (ValueError, RecursionError):
         return Canvas(error="This canvas is not valid JSON")
     if not isinstance(data, dict):
         return Canvas(error="This canvas has no nodes")
@@ -87,6 +88,9 @@ def parse_canvas(raw: str) -> Canvas:
                 color=_safe_color(entry.get("color")),
             )
         except (KeyError, TypeError, ValueError):
+            continue
+        # float() reads "NaN" and "inf" as numbers, and neither is a place on the page.
+        if not all(math.isfinite(n) for n in (node.x, node.y, node.width, node.height)):
             continue
         canvas.nodes.append(node)
     edges = data.get("edges")

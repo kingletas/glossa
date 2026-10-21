@@ -8,6 +8,7 @@ renderer shows the reason with the original source, never a half-result.
 
 import datetime
 import html
+import os
 import re
 from dataclasses import dataclass
 from functools import cmp_to_key
@@ -33,6 +34,11 @@ from .dql import (
 )
 
 MAX_RESULT_ROWS = 2000
+# The longest string or list an expression may build: nested replace() multiplies a string
+# at every level.
+MAX_VALUE_CHARS = int(os.environ.get("READER_MAX_VALUE_CHARS", str(1_000_000)))
+# What a note's expression can trip inside the evaluator; each reaches the caller as a DqlError.
+TRIPPED = (ArithmeticError, LookupError, RecursionError, TypeError, ValueError)
 
 # `date(today)` writes the keyword bare, so the parser hands it back as a field
 # name. Evaluating it as one finds no such property and the whole comparison
@@ -111,9 +117,9 @@ class Evaluator:
                 return not _truthy(value)
             return -value if isinstance(value, (int, float)) else None
         if isinstance(node, Binary):
-            return self._binary(node, row)
+            return _bounded(self._binary(node, row))
         if isinstance(node, Call):
-            return self._call(node, row)
+            return _bounded(self._call(node, row))
         if isinstance(node, Lambda):
             raise DqlError("a lambda is only valid as a function argument")
         raise DqlError(f"unsupported expression {type(node).__name__}")
@@ -217,6 +223,13 @@ class Evaluator:
                 return _to_date(keyword)
         arguments = [self.evaluate(argument, row) for argument in node.arguments]
         return _function(name, arguments)
+
+
+def _bounded(value):
+    """VALUE, unless it is a string or list longer than MAX_VALUE_CHARS."""
+    if isinstance(value, (str, list)) and len(value) > MAX_VALUE_CHARS:
+        raise DqlError(f"a value grew past {MAX_VALUE_CHARS:,} characters")
+    return value
 
 
 def _date_keyword(node) -> str:
@@ -661,14 +674,24 @@ class DataviewEngine:
         raise DqlError("unsupported FROM source")
 
     def run_inline(self, text: str, this_rel: str) -> str:
-        """Evaluates one inline expression in the context of the current note."""
-        node = parse_expression(text)
-        this_row = self._page_row(this_rel)
-        value = Evaluator(this_row).evaluate(node, this_row)
-        return _value_html(value, self.note_base)
+        """Evaluates one inline expression in the context of the current note. Raises DqlError."""
+        try:
+            node = parse_expression(text)
+            this_row = self._page_row(this_rel)
+            value = Evaluator(this_row).evaluate(node, this_row)
+            return _value_html(value, self.note_base)
+        except TRIPPED as error:
+            reason = type(error).__name__
+            raise DqlError(f"this expression could not be evaluated ({reason})") from None
 
     def run_query(self, text: str, this_rel: str) -> str:
-        """Executes a DQL block and returns the escaped result markup."""
+        """Executes a DQL block and returns the escaped result markup. Raises DqlError."""
+        try:
+            return self._run_query(text, this_rel)
+        except TRIPPED as error:
+            raise DqlError(f"this query could not be run ({type(error).__name__})") from None
+
+    def _run_query(self, text: str, this_rel: str) -> str:
         query = parse_query(text)
         this_row = self._page_row(this_rel)
         evaluator = Evaluator(this_row)

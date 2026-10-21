@@ -1,6 +1,6 @@
 """Pure-Python rendering for the Mermaid diagrams real vaults actually write.
 
-Flowcharts, sequence diagrams, and pies cover ~98% of the corpus; anything else
+Flowcharts, sequence diagrams and pies are drawn; anything else
 raises MermaidUnsupported and renders as labeled source. Nothing here executes
 note content: the source is parsed as data and drawn as static SVG.
 """
@@ -12,6 +12,8 @@ import re
 from dataclasses import dataclass, field
 
 MAX_DIAGRAM_NODES = int(os.environ.get("READER_MAX_DIAGRAM_NODES", "400"))
+# Edges, and a sequence diagram's messages and notes: `A & B --> C & D` adds every pair.
+MAX_DIAGRAM_EDGES = int(os.environ.get("READER_MAX_DIAGRAM_EDGES", "2000"))
 
 CHAR_WIDTH = 7.2
 LINE_HEIGHT = 19
@@ -68,12 +70,16 @@ def render_mermaid(source: str) -> str:
         raise MermaidError("the block is empty")
     head = lines[0].strip()
     kind = head.split()[0].casefold()
-    if kind in ("graph", "flowchart"):
-        return _flowchart(head, lines[1:])
-    if kind == "sequencediagram":
-        return _sequence(lines[1:])
-    if kind == "pie":
-        return _pie(head, lines[1:])
+    try:
+        if kind in ("graph", "flowchart"):
+            return _flowchart(head, lines[1:])
+        if kind == "sequencediagram":
+            return _sequence(lines[1:])
+        if kind == "pie":
+            return _pie(head, lines[1:])
+    except (ArithmeticError, LookupError, RecursionError, ValueError) as error:
+        # A note's text is hostile: whatever it trips in the layout reaches the caller as one error.
+        raise MermaidError(f"could not draw this diagram ({type(error).__name__})") from None
     raise MermaidUnsupported(kind)
 
 
@@ -310,6 +316,8 @@ def _parse_flowchart(header: str, lines: list[str]):
                         arrow=op.endswith((">", "x", "o")),
                         arrow_start=op.startswith("<"),
                     ))
+                    if len(edges) > MAX_DIAGRAM_EDGES:
+                        raise MermaidError(f"diagram exceeds {MAX_DIAGRAM_EDGES} edges")
             sources = targets
             index += 2
     for node_id, name in class_of.items():
@@ -638,6 +646,10 @@ def _sequence(lines: list[str]) -> str:
         raise MermaidError(f"could not read “{line}”")
     if not participants:
         raise MermaidError("no participants found")
+    if len(participants) > MAX_DIAGRAM_NODES:
+        raise MermaidError(f"diagram exceeds {MAX_DIAGRAM_NODES} participants")
+    if len(rows) > MAX_DIAGRAM_EDGES:
+        raise MermaidError(f"diagram exceeds {MAX_DIAGRAM_EDGES} messages and notes")
 
     x_of: dict[str, float] = {}
     cursor = PADDING
@@ -718,10 +730,12 @@ def _pie(header: str, lines: list[str]) -> str:
         if line.startswith("title"):
             title = _clean_label(line[len("title"):])
             continue
-        entry = re.match(r'^"(?P<label>[^"]*)"\s*:\s*(?P<value>[\d.]+)$', line)
+        entry = re.match(r'^"(?P<label>[^"]*)"\s*:\s*(?P<value>\d+(?:\.\d+)?)$', line)
         if not entry:
             raise MermaidError(f"could not read “{line}”")
         slices.append((entry.group("label"), float(entry.group("value"))))
+        if len(slices) > MAX_DIAGRAM_NODES:
+            raise MermaidError(f"diagram exceeds {MAX_DIAGRAM_NODES} slices")
     total = sum(value for _, value in slices)
     if not slices or total <= 0:
         raise MermaidError("no slices found")

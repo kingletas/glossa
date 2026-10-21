@@ -45,6 +45,8 @@ def test_malformed_json_degrades():
 def test_hostile_geometry_is_refused_per_node():
     payload = {"nodes": [
         {"id": "a", "type": "text", "x": "NaN-ish", "y": 0, "width": 1, "height": 1},
+        {"id": "c", "type": "text", "x": "NaN", "y": 0, "width": 1, "height": 1},
+        {"id": "d", "type": "text", "x": 0, "y": 0, "width": "inf", "height": 1},
         {"id": "b", "type": "text", "x": 0, "y": 0, "width": 100, "height": 50, "text": "ok"},
     ]}
     canvas = parse_canvas(json.dumps(payload))
