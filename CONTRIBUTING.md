@@ -8,7 +8,7 @@ Thanks for looking.
 make check
 ```
 
-That's everything a commit has to pass: ruff and the tests. A change that alters what a module renders is also run through both apps' own tests, which hold the cases that need a real vault graph, before it is tagged.
+That runs ruff and the tests. CI runs it on Python 3.12 and 3.13, and semgrep over the source and the tests as well.
 
 ## What a change should look like
 

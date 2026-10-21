@@ -36,7 +36,7 @@ print(Evaluator().evaluate(parse_expression('choice(priority > 1, "soon", "later
 
 ## Step 3: run it
 
-This is the output of that script, copied from a real run:
+Its output:
 
 ```text
 {'status': 'open', 'priority': 2}
