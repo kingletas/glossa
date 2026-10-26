@@ -162,13 +162,13 @@ class Palette:
 STONE_LIGHT = Palette(
     key="stone",
     label="Stone",
-    vibe="warm neutral, quiet pine",
+    vibe="white page, neutral grey, quiet pine",
     dark=False,
-    void="#f1efeb",
-    bg="#faf9f7",
+    void="#e4e4e4",
+    bg="#ffffff",
     surface="#ffffff",
-    line="#e4e1da",
-    line_strong="#d3cec4",
+    line="#b8b8b8",
+    line_strong="#a3a3a3",
     link="#14684f",
     accent="#14684f",
     # Hover sinks on a light ground: there is nowhere brighter for it to go.
@@ -181,11 +181,12 @@ STONE_LIGHT = Palette(
     success="#14684f",
     info="#2b5f8f",
 )
-"""Stone by day: warm neutral greys with the sepia out, and one deep pine.
+"""Stone by day: a white page, a neutral grey rail the eye can find, and one deep pine.
 
-`muted` measures 3.26:1 on the canvas, below the 4.5:1 text needs, so an app puts it
-through `Palette.legible()`, or reads `Palette.chrome_muted`, before using it for text,
-which lifts it to 4.81:1.
+The rail is 1.27:1 from the page and the line between them 1.56:1 from the rail, so
+the edge reads at a glance. `muted` measures 3.43:1 on the page, below the 4.5:1 text
+needs, so an app puts it through `Palette.legible()`, or reads `Palette.chrome_muted`,
+before using it for text, which lifts it to 4.70:1.
 """
 
 STONE_DARK = Palette(
