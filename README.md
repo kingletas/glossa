@@ -52,7 +52,7 @@ It needs Python 3.12 or later, and isn't on PyPI. An app depends on a tagged ver
 
 ```toml
 dependencies = [
-    "glossa[render] @ git+https://github.com/kingletas/glossa@v0.1.0",
+    "glossa[render] @ git+https://github.com/kingletas/glossa@v0.1.1",
 ]
 ```
 
