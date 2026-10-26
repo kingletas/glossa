@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.1
+
 - **A note can no longer make a reader run out of memory.** Three small files could each take gigabytes: a `.base` file of YAML aliases (now refused, as frontmatter's already were), an Excalidraw drawing that decompresses far past its size cap (now stopped as it passes the cap, not after), and a Dataview expression that nests `replace()` (now refused past `READER_MAX_VALUE_CHARS`). Mermaid flowcharts gain an edge cap, `READER_MAX_DIAGRAM_EDGES`, and sequence diagrams and pies are held to the node cap.
 - **Each renderer raises only its own error.** Whatever a note trips inside a query, an inline expression or a diagram reaches the app as `DqlError` or `MermaidError`; a base file shows a message.
 - A base view sorts numbers by value, so 2 comes before 10.

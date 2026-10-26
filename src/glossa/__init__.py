@@ -3,4 +3,4 @@
 Nothing here writes, runs a note's code or touches the network.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"

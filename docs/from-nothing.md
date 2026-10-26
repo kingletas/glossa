@@ -11,7 +11,7 @@ glossa reads Obsidian's dialect of Markdown without running anything a note cont
 Into the project that will use it, with the `render` extra, because this guide parses Markdown and reads YAML:
 
 ```bash
-uv add "glossa[render] @ git+https://github.com/kingletas/glossa@v0.1.0"
+uv add "glossa[render] @ git+https://github.com/kingletas/glossa@v0.1.1"
 ```
 
 ## Step 2: read a note
