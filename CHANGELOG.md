@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.1.2
+
+- **The palettes catch up with the apps.** `Palette.legible()` takes several grounds and lifts a colour until it clears all of them; `Palette.card` names the surface a card or dialog sits on; `Palette.chrome_muted` is the quiet label colour lifted to 4.5:1 on the canvas, the rail and a card. `channels()` is public, for an app that builds its own colours from a palette.
+
 ## 0.1.1
 
 - **A note can no longer make a reader run out of memory.** Three small files could each take gigabytes: a `.base` file of YAML aliases (now refused, as frontmatter's already were), an Excalidraw drawing that decompresses far past its size cap (now stopped as it passes the cap, not after), and a Dataview expression that nests `replace()` (now refused past `READER_MAX_VALUE_CHARS`). Mermaid flowcharts gain an edge cap, `READER_MAX_DIAGRAM_EDGES`, and sequence diagrams and pies are held to the node cap.
