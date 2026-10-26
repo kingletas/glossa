@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.1.3
+
+- **Stone by day has a white page and a neutral grey rail the eye can find.** The rail and the page were two warm greys 1.09:1 apart, with a hairline 1.14:1 from the rail, so the edge between them was lost. The page is white, the rail a neutral grey 1.27:1 from it, and the line between them 1.56:1 from the rail; a test holds the two floors, 1.25:1 and 1.5:1.
+
 ## 0.1.2
 
 - **The palettes catch up with the apps.** `Palette.legible()` takes several grounds and lifts a colour until it clears all of them; `Palette.card` names the surface a card or dialog sits on; `Palette.chrome_muted` is the quiet label colour lifted to 4.5:1 on the canvas, the rail and a card. `channels()` is public, for an app that builds its own colours from a palette.

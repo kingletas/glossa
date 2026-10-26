@@ -43,3 +43,10 @@ def test_the_quiet_labels_clear_the_floor_on_the_canvas_the_rail_and_a_card():
 def test_a_quiet_colour_that_already_reads_is_left_as_the_theme_states_it():
     assert STONE_DARK.chrome_muted == STONE_DARK.muted
     assert STONE_LIGHT.chrome_muted != STONE_LIGHT.muted
+
+
+def test_stone_by_day_has_a_rail_the_eye_can_find_against_the_page():
+    """The rail and the page were two warm greys 1.09:1 apart, and the edge was lost."""
+    assert STONE_LIGHT.bg == "#ffffff"
+    assert contrast_ratio(STONE_LIGHT.void, STONE_LIGHT.bg) >= 1.25
+    assert contrast_ratio(STONE_LIGHT.line, STONE_LIGHT.void) >= 1.5
