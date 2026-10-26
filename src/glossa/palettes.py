@@ -9,14 +9,14 @@ member of it is sixteen colours, and an app generates its style tokens from them
 from dataclasses import dataclass
 
 
-def _channels(color: str) -> tuple[int, int, int]:
+def channels(color: str) -> tuple[int, int, int]:
     value = color.lstrip("#")
     return tuple(int(value[i : i + 2], 16) for i in (0, 2, 4))  # type: ignore[return-value]
 
 
 def mix(base: str, other: str, amount: float) -> str:
     """Returns `base` moved `amount` of the way towards `other`, in sRGB."""
-    left, right = _channels(base), _channels(other)
+    left, right = channels(base), channels(other)
     blended = (round(a + (b - a) * amount) for a, b in zip(left, right, strict=True))
     return "#" + "".join(f"{channel:02x}" for channel in blended)
 
@@ -24,7 +24,7 @@ def mix(base: str, other: str, amount: float) -> str:
 def relative_luminance(color: str) -> float:
     """WCAG relative luminance, the input to every contrast ratio below."""
     parts = []
-    for channel in _channels(color):
+    for channel in channels(color):
         srgb = channel / 255
         parts.append(srgb / 12.92 if srgb <= 0.04045 else ((srgb + 0.055) / 1.055) ** 2.4)
     red, green, blue = parts
@@ -38,16 +38,18 @@ def contrast_ratio(one: str, two: str) -> float:
     return (lighter + 0.05) / (darker + 0.05)
 
 
-def readable(color: str, ground: str, ratio: float, toward: str) -> str:
+def readable(color: str, ground: str | tuple[str, ...], ratio: float, toward: str) -> str:
     """Lifts `color` towards `toward` in 5% steps until it clears `ratio` on `ground`.
 
     Solved rather than nudged: a theme states the colour it wants, and a colour that
-    cannot carry text at that size on that ground is raised until it can.
+    cannot carry text at that size on that ground is raised until it can. Given
+    several grounds it is raised until it clears all of them.
     """
+    grounds = (ground,) if isinstance(ground, str) else ground
     candidate = color
     for step in range(21):
         candidate = mix(color, toward, step * 0.05)
-        if contrast_ratio(candidate, ground) >= ratio:
+        if all(contrast_ratio(candidate, one) >= ratio for one in grounds):
             break
     return candidate
 
@@ -97,9 +99,26 @@ class Palette:
 
     # -- derived ----------------------------------------------------------
 
-    def legible(self, color: str, ground: str = "", ratio: float = 4.5) -> str:
+    def legible(
+        self, color: str, ground: str | tuple[str, ...] = "", ratio: float = 4.5
+    ) -> str:
         """The same colour, raised until it can carry text on the ground it sits on."""
         return readable(color, ground or self.bg, ratio, self.text)
+
+    @property
+    def card(self) -> str:
+        """The surface a card, a dialog's body and the outline panel sit on."""
+        return mix(self.bg, self.surface, 0.6)
+
+    @property
+    def chrome_muted(self) -> str:
+        """The quiet colour of the window's labels, lifted until it reads on every ground.
+
+        The path, the inactive tabs, the search hint, the foot and the outline's
+        entries sit on the canvas, the rail or a card, and the colour has to clear
+        4.5:1 on the hardest of them rather than on the one it was drawn on.
+        """
+        return self.legible(self.muted, (self.bg, self.void, self.card))
 
     @property
     def deep(self) -> str:
@@ -165,7 +184,8 @@ STONE_LIGHT = Palette(
 """Stone by day: warm neutral greys with the sepia out, and one deep pine.
 
 `muted` measures 3.26:1 on the canvas, below the 4.5:1 text needs, so an app puts it
-through `Palette.legible()` before using it for text, which lifts it to 4.81:1.
+through `Palette.legible()`, or reads `Palette.chrome_muted`, before using it for text,
+which lifts it to 4.81:1.
 """
 
 STONE_DARK = Palette(

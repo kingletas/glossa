@@ -32,18 +32,18 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "linkify-it-py", marker = "extra == 'render'", specifier = ">=2.0" },
-    { name = "markdown-it-py", marker = "extra == 'render'", specifier = ">=3.0" },
-    { name = "mdit-py-plugins", marker = "extra == 'render'", specifier = ">=0.4" },
-    { name = "pyyaml", marker = "extra == 'render'", specifier = ">=6.0" },
+    { name = "linkify-it-py", marker = "extra == 'render'", specifier = ">=2.2.0" },
+    { name = "markdown-it-py", marker = "extra == 'render'", specifier = ">=4.2.0" },
+    { name = "mdit-py-plugins", marker = "extra == 'render'", specifier = ">=0.6.1" },
+    { name = "pyyaml", marker = "extra == 'render'", specifier = ">=6.0.3" },
 ]
 provides-extras = ["render"]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "glossa", extras = ["render"] },
-    { name = "pytest", specifier = ">=8.0" },
-    { name = "ruff", specifier = ">=0.6" },
+    { name = "pytest", specifier = ">=9.1.1" },
+    { name = "ruff", specifier = ">=0.16.9" },
 ]
 
 [[package]]
