@@ -31,6 +31,7 @@ It's the rendering core of [Solander](https://github.com/kingletas/solander), a 
 | `bases` | Render `.base` table views: filters, formulas, groups and row limits |
 | `canvas`, `kanban`, `excalidraw`, `lzstring`, `mermaid` | Render canvases, boards, drawings and diagrams |
 | `fuzzy`, `listdiff`, `palettes` | Fuzzy matching, list diffs, and the color palettes both apps theme with |
+| `menu` | The main menu both apps open from their header, as a table of groups and rows; a window passes the capabilities it holds and gets back the rows it can offer |
 
 `dataview` and `bases` ask the app for a vault graph. Each app builds its own, keyed by each note's path inside the vault:
 
@@ -52,7 +53,7 @@ It needs Python 3.12 or later, and isn't on PyPI. An app depends on a tagged ver
 
 ```toml
 dependencies = [
-    "glossa[render] @ git+https://github.com/kingletas/glossa@v0.1.3",
+    "glossa[render] @ git+https://github.com/kingletas/glossa@v0.1.4",
 ]
 ```
 
@@ -88,7 +89,7 @@ make check
 
 Runs ruff and the tests, with [uv](https://docs.astral.sh/uv/). CI also runs semgrep over the source and the tests, on Python 3.12 and 3.13.
 
-The tests cover links, frontmatter, canvases, drawings and their decompression, fuzzy matching, list diffs, Dataview expressions, the limits a hostile note runs into, and a bare install. `markdown`, `callouts`, `kanban`, `palettes`, Mermaid's layout and most of `bases` have no test here yet.
+The tests cover links, frontmatter, canvases, drawings and their decompression, fuzzy matching, list diffs, the menu table, Dataview expressions, the limits a hostile note runs into, and a bare install. `markdown`, `callouts`, `kanban`, `palettes`, Mermaid's layout and most of `bases` have no test here yet.
 
 ## Licence
 

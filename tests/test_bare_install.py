@@ -18,6 +18,7 @@ BARE_MODULES = [
     "links",
     "listdiff",
     "lzstring",
+    "menu",
     "mermaid",
     "palettes",
 ]
