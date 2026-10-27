@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.1.4
+
+- **The two apps' main menu is one table.** `glossa.menu` holds the menu both readers open from their header as plain data, with no toolkit: Find; Appearance, Typography and Preferences; This note, Tabs and Show; Keyboard shortcuts and About. Each row carries its label, its action, and optionally a submenu or the capability a window must hold to offer it. `main_menu(capabilities, app)` returns the groups a window holding those capabilities keeps, so an editing row appears only where the window can edit and never by the name of the app, and `action_names` lists every action a menu names, so an app can test that its window registers each one. Each app builds its own menu from the groups. Preferences is a row the app fills itself, since one app opens a page and the other a dialog.
+
 ## 0.1.3
 
 - **Stone by day has a white page and a neutral grey rail the eye can find.** The rail and the page were two warm greys 1.09:1 apart, with a hairline 1.14:1 from the rail, so the edge between them was lost. The page is white, the rail a neutral grey 1.27:1 from it, and the line between them 1.56:1 from the rail; a test holds the two floors, 1.25:1 and 1.5:1.
