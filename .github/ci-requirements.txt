@@ -5,4 +5,4 @@
 uv==0.12.20
 semgrep==1.178.0
 # The release proves a tag with the same pytest the lock gives a contributor.
-pytest==9.1.1
+pytest==9.2.0
